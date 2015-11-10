@@ -1,0 +1,62 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SplashActivity" >
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <ImageView
+            android:id="@+id/iv_splash_back"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_launcher" />
+        <ImageView 
+            android:id="@+id/iv_splash_close"
+            android:src="@drawable/splash_close"
+             android:layout_gravity="right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+           />
+        
+        <RelativeLayout
+            android:id="@+id/ll_splash_show"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/tv_splash_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="我的内存处理"
+                android:textSize="30sp" />
+
+            <FrameLayout
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_below="@id/tv_splash_title"
+                android:layout_centerInParent="true" >
+
+                <ProgressBar
+                    android:id="@+id/pb_splash_pb"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center" />
+
+                <TextView
+                    android:id="@+id/tv_splash_load"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="5"
+                    android:textSize="20sp" />
+            </FrameLayout>
+        </RelativeLayout>
+    </FrameLayout>
+
+</RelativeLayout>

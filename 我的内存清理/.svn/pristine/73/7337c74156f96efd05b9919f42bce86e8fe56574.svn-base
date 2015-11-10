@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="1" >
+
+        <ListView
+            android:id="@+id/lv_black_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+        </ListView>
+
+        <ProgressBar
+            android:id="@+id/pb_black_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="invisible" />
+
+        <TextView
+            android:id="@+id/tv_process_float"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="用户程序(15)"
+            android:textSize="20sp" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/bt_fragmentblack_all"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="全选" />
+
+        <Button
+            android:id="@+id/bt_fragmentblack_notall"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="反选" />
+
+        <Button
+            android:id="@+id/bt_fragmentblack_add"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="添加" />
+    </LinearLayout>
+</LinearLayout>

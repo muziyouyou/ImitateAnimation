@@ -1,0 +1,31 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    tools:context=".MusicActivity" >
+
+    <com.shaung.ramclear.ui.Musics
+        android:id="@+id/musics1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        >
+
+        <com.shaung.ramclear.ui.MusicItem
+            android:id="@+id/musicItem1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <com.shaung.ramclear.ui.MusicItem
+            android:id="@+id/musicItem2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <com.shaung.ramclear.ui.MusicItem
+            android:id="@+id/musicItem3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        
+    </com.shaung.ramclear.ui.Musics>
+
+</RelativeLayout>

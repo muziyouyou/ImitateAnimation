@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <!--缩放
+   fromXScale 起始x轴坐标: 第一个参数 fromX x轴起始大小(这个大小指倍数，它内部会用这个倍数去乘实际像素)
+   toXScale止x轴坐标: toX 轴截止大小(若起始大小=截止大小就是指x轴不伸缩)
+   fromYScale 始y轴坐标: 
+   toYScale 止y轴坐标:
+   
+   pivotX  轴的坐标:
+   pivotY  轴的坐标:
+     1)当值为"50"，表示使用绝对位置定位
+     2)当值为"50%"，表示使用相对于控件本身定位
+     3)当值为"50%p"，表示使用相对于控件的父控件定位
+     -->
+<scale
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromXScale="1"
+    android:toXScale="2"
+    android:fromYScale="1"
+    android:toYScale="2"
+    android:pivotX="50%"
+    android:pivotY="50%"
+    android:duration="2000">
+    
+
+</scale>

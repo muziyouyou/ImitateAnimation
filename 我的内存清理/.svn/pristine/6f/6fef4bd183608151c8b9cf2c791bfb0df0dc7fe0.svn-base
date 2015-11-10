@@ -1,0 +1,45 @@
+package com.shaung.ramclear;
+
+import java.util.Timer;
+import java.util.TimerTask;
+
+import com.lidroid.xutils.ViewUtils;
+import com.lidroid.xutils.view.annotation.ViewInject;
+
+import android.os.Bundle;
+import android.widget.TextView;
+import android.app.Activity;
+import android.content.Intent;
+
+public class SplashActivity extends Activity {
+
+	@ViewInject(R.id.tv_splash_load)
+	private TextView textView;
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_splash);
+		ViewUtils.inject(this);
+		final Timer timer = new Timer();
+		timer.schedule(new TimerTask() {
+			private int number=2;
+			@Override
+			public void run() {
+				if(number>0){
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							textView.setText(number+"");
+						}
+					});
+					number--;
+				}else{
+					timer.cancel();
+					Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+					startActivity(intent);
+					finish();
+				}
+			}
+		}, 0, 1000);
+	}
+}

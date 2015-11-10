@@ -1,0 +1,24 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:clear="http://schemas.android.com/apk/res/com.shaung.ramclear"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".SettingActivity" >
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="设置中心"
+        android:textSize="30sp" />
+
+    <com.shaung.ramclear.ui.SetView
+        android:id="@+id/sv_set_item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        clear:des_off="已关闭"
+        clear:des_on="已开启"
+        clear:title="是否开启桌面服务" />
+
+</LinearLayout>

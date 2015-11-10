@@ -1,0 +1,444 @@
+package com.shaung.ramclear.service;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.lidroid.xutils.view.annotation.event.OnTouch;
+import com.shaung.ramclear.R;
+import com.shaung.ramclear.utils.DensityUtils;
+import com.shaung.ramclear.utils.ScreenUtils;
+
+import android.app.Service;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PixelFormat;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.SystemClock;
+import android.util.DisplayMetrics;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
+import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.WindowManager;
+import android.view.View.OnTouchListener;
+import android.view.WindowManager.LayoutParams;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
+
+public class RocketService extends Service {
+
+	private WindowManager windowManager;
+	private WindowManager.LayoutParams params;
+	private WindowManager.LayoutParams params_smoke;
+	private WindowManager.LayoutParams params_rush;
+	private ImageView iv_smoke_m;
+	private ImageView iv_rush_m;
+	private ImageView iv_rocket_rocketimage;
+	private DisplayMetrics screenWidth;
+	private int heightPixels;
+	private int widthPixels;
+	private RelativeLayout relativeLayout;
+	private RelativeLayout relativeLayout_Rush;
+	private int smoke_hight;
+	private int smoke_width;
+	private PopupWindow popupWindow;
+	public Handler handler=new Handler(){
+		@Override
+		public void handleMessage(Message msg) {
+			super.handleMessage(msg);
+			if(msg.what==0){
+				params.y = params.y-dpTopx(15);
+				windowManager.updateViewLayout(iv_rocket_rocketimage, params);
+			}else if(msg.what==11){
+				params_rush.y+=dpTopx(15);
+				windowManager.updateViewLayout(relativeLayout_Rush, params_rush);
+			}else if(msg.what==12){
+				relativeLayout_Rush.setVisibility(View.INVISIBLE);
+				Toast.makeText(getApplicationContext(), "清理了垃圾N个", 0).show();
+				stopSelf();
+			}else {
+				iv_rocket_rocketimage.setVisibility(View.INVISIBLE);
+				relativeLayout.setVisibility(View.INVISIBLE);
+				rushDrop();
+			}
+
+		}
+	};
+	private Button bt_popuwindow_quit;
+	private View view_popu;
+	private Button bt_popuwindow_enter;
+
+
+
+
+	@Override
+	public IBinder onBind(Intent intent) {
+		return null;
+	}
+	/**
+	 * TODO 垃圾掉落
+	 */
+	protected void rushDrop() {
+
+		//起始位置
+		relativeLayout_Rush.setVisibility(View.VISIBLE);
+		params_rush.x=(widthPixels-iv_rush_m.getWidth())/2;
+		params_rush.y=dpTopx(0);
+		windowManager.updateViewLayout(relativeLayout_Rush, params_rush);
+		//开始掉落
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				while(params_rush.y<(heightPixels/2)){
+					handler.sendEmptyMessage(11);
+					SystemClock.sleep(70);
+				}
+			
+				//windowManager.removeView(relativeLayout_Rush);
+				handler.sendEmptyMessage(12);
+			}
+
+		}).start();
+	}
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		screenWidth = ScreenUtils.getScreenWidth(getApplicationContext());
+		heightPixels = screenWidth.heightPixels;
+		widthPixels = screenWidth.widthPixels;
+		//设置火箭
+		setRocket();
+		//设置云雾
+		setColude();
+		//设置垃圾
+		setRush();
+		//设置手势
+		MyOnGestureListener listener = new MyOnGestureListener();
+		final GestureDetector detector = new GestureDetector(getApplicationContext(), listener);
+	
+		//设置气泡
+	    view_popu = View.inflate(getApplicationContext(), R.layout.popuwindow_layout, null);
+	    view_popu.setOnTouchListener(new OnTouchListener() {
+			
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				detector.onTouchEvent(event);
+				return true;
+			}
+		});
+		bt_popuwindow_quit = (Button) view_popu.findViewById(R.id.bt_popuwindow_quit);
+		bt_popuwindow_enter = (Button) view_popu.findViewById(R.id.bt_popuwindow_enter);
+		bt_popuwindow_quit.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				stopSelf();
+			}
+		});
+		bt_popuwindow_enter.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				popupWindow.dismiss();
+				popupWindow=null;
+				Intent intent = new Intent();
+				intent.setAction("com.shaung.ramclear.HomeActivity");
+				intent.addCategory("android.intent.category.DEFAULT");
+				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				startActivity(intent);
+			}
+		});
+		//设置
+		setRocktClick();
+	}
+  
+	 
+	/**
+	 * TODO 火箭点击事件
+	 */
+	private void setRocktClick() {
+
+		iv_rocket_rocketimage.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				int[] location=new int[2];
+				v.getLocationInWindow(location);
+				int x=location[0];
+				int y=location[1];
+				popupWindow = new PopupWindow(view_popu, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				popupWindow.showAtLocation(iv_rocket_rocketimage, Gravity.LEFT|Gravity.TOP, x+dpTopx(20), y);
+			}
+		});
+
+	}
+	/**
+	 * TODO 设置垃圾的位置
+	 */
+	private void setRush() {
+		relativeLayout_Rush = new RelativeLayout(getApplicationContext());
+		iv_rush_m = new ImageView(getApplicationContext());
+		iv_rush_m.setBackgroundResource(R.drawable.rush);
+		windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+		params_rush = new WindowManager.LayoutParams();
+		params_rush.height = WindowManager.LayoutParams.WRAP_CONTENT;     
+		params_rush.width = WindowManager.LayoutParams.WRAP_CONTENT;
+		params_rush.flags=WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+		params_rush.format = PixelFormat.TRANSLUCENT; 
+		params_rush.type = WindowManager.LayoutParams.TYPE_PRIORITY_PHONE;
+		params_rush.gravity = Gravity.LEFT | Gravity.TOP;
+		//计算控件位置
+		relativeLayout_Rush.addView(iv_rush_m);
+		windowManager.addView(relativeLayout_Rush, params_rush);
+		relativeLayout_Rush.setVisibility(View.INVISIBLE);
+	}
+	/**
+	 * TODO 设置云雾
+	 */
+	private void setColude() {
+
+		relativeLayout = new RelativeLayout(getApplicationContext());
+		iv_smoke_m = new ImageView(getApplicationContext());
+		iv_smoke_m.setBackgroundResource(R.drawable.desktop_smoke_m);
+		windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+		params_smoke = new WindowManager.LayoutParams();
+		params_smoke.height = WindowManager.LayoutParams.WRAP_CONTENT;     
+		params_smoke.width = WindowManager.LayoutParams.WRAP_CONTENT;
+		params_smoke.flags=WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+		params_smoke.format = PixelFormat.TRANSLUCENT; 
+		params_smoke.type = WindowManager.LayoutParams.TYPE_PRIORITY_PHONE;
+		params_smoke.gravity = Gravity.LEFT | Gravity.TOP;
+		//计算控件位置
+		relativeLayout.addView(iv_smoke_m);
+		windowManager.addView(relativeLayout, params_smoke);
+		relativeLayout.setVisibility(View.INVISIBLE);
+	}
+
+	/**
+	 * TODO 设置火箭
+	 */
+	private void setRocket() {
+		//初始化控件
+
+		iv_rocket_rocketimage = new ImageView(getApplicationContext());
+		//iv_rocket_rocketimage.setBackgroundResource(R.anim.rocket);
+		iv_rocket_rocketimage.setImageResource(R.drawable.ic_launcher);
+		//设置屏幕参数
+		windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+		params = new WindowManager.LayoutParams();
+		params.height = WindowManager.LayoutParams.WRAP_CONTENT;     
+		params.width = WindowManager.LayoutParams.WRAP_CONTENT;
+		params.flags=WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+		params.format = PixelFormat.TRANSLUCENT; 
+		params.type = WindowManager.LayoutParams.TYPE_PRIORITY_PHONE;
+		params.gravity = Gravity.LEFT | Gravity.TOP;
+		params.x = dpTopx(0);
+		params.y = dpTopx(100);
+		//设置动画
+		//animationDrawable = (AnimationDrawable) iv_rocket_rocketimage.getBackground();
+		//设置渐变动画
+		setTouch();
+		windowManager.addView(iv_rocket_rocketimage, params);
+	}
+	
+	
+	/**
+	 * TODO 火箭触摸监听
+	 */
+	private void setTouch() {
+		// 触摸监听事件
+		iv_rocket_rocketimage.setOnTouchListener(new OnTouchListener() {
+			private int startX;
+			private int startY;
+
+			// v : 当前的控件
+			// event : 当前的事件
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				//animationDrawable.start();//开启动画
+				// event.getAction() : 获取执行事件类型
+				switch (event.getAction()) {
+				case MotionEvent.ACTION_DOWN:
+					// 按下事件
+					// 1.记录开始的x和y的坐标
+					startX = (int) event.getRawX();
+					startY = (int) event.getRawY();
+					break;
+				case MotionEvent.ACTION_MOVE:
+					iv_rocket_rocketimage.setImageResource(R.drawable.desktop_rocket_launch_1);
+					windowManager.updateViewLayout(iv_rocket_rocketimage, params);
+					// 移动的事件
+					// 2.记录新的位置的x和y的坐标
+					int newX = (int) event.getRawX();
+					int newY = (int) event.getRawY();
+					// 3.计算偏移量
+					int dX = newX - startX;
+					int dY = newY - startY;
+					// 4.控件移动相应偏移量，重新绘制控件
+					// 4.1获取控件没有重新绘制时控件距离父控件左边框和顶边框的距离
+					/*	int l = iv_rocket_rocketimage.getLeft();// 控件距离父控件左边框距离
+					int t = iv_rocket_rocketimage.getTop();// 重新绘制之前控件距离父控件顶部的距离
+					 */					// 4.2移动相应的偏移量
+					params.x+=dX;
+					params.y+=dY;
+					windowManager.updateViewLayout(iv_rocket_rocketimage, params);
+					//设置云雾
+					Map<String, Integer> somkePosition = smokePosition();
+					int roket_hight=iv_rocket_rocketimage.getHeight();
+					int y1 = params.y;
+					if(y1>(somkePosition.get("y")-roket_hight)){
+						//烟雾
+						params_smoke.x=somkePosition.get("x");
+						params_smoke.y=somkePosition.get("y");
+						windowManager.updateViewLayout(relativeLayout, params_smoke);
+						relativeLayout.setVisibility(View.VISIBLE);
+						//火箭
+						int x=(widthPixels-iv_rocket_rocketimage.getWidth())/2;
+						params.x=x;
+						params.y=somkePosition.get("y")-iv_rocket_rocketimage.getHeight();
+						windowManager.updateViewLayout(iv_rocket_rocketimage, params);
+						break;
+					}else{
+						relativeLayout.setVisibility(View.INVISIBLE);
+					}
+					startX = newX;
+					startY = newY;
+					break;
+				case MotionEvent.ACTION_UP:
+
+					//控件距离左上角
+					int y2 = params.y;
+					Map<String, Integer> somkePosition1 = smokePosition();
+					int roket_hight1=iv_rocket_rocketimage.getHeight();
+					if(y2>(somkePosition1.get("y")-roket_hight1)-dpTopx(20)){
+						sendRocket();
+
+						Animation ra = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.alpha);
+						// 执行动画
+						iv_smoke_m.startAnimation(ra);
+					}else{
+						params.x=0;
+						iv_rocket_rocketimage.setImageResource(R.drawable.ic_launcher);
+						windowManager.updateViewLayout(iv_rocket_rocketimage, params);
+					}
+					break;
+				}
+				return false;
+			}
+		});
+	}
+
+
+    /**
+     * TODO 其他事件
+     */
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+        if(popupWindow!=null){
+        	popupWindow.dismiss();
+        	popupWindow=null;
+        }
+        if(iv_rocket_rocketimage!=null){
+        	windowManager.removeView(iv_rocket_rocketimage);
+        	iv_rocket_rocketimage=null;
+        }
+		
+        if(relativeLayout!=null){
+        	windowManager.removeView(relativeLayout);
+        	relativeLayout=null;
+        }
+        if(relativeLayout_Rush!=null){
+        	windowManager.removeView(relativeLayout_Rush);
+        	relativeLayout_Rush=null;
+        }
+	}
+
+	/**
+	 * TODO 发送火箭效果
+	 */
+	protected void sendRocket() {
+		new Thread(){
+			public void run() {
+				//不停修改控件距离屏幕顶部的距离
+				while(params.y>dpTopx(0)){
+					SystemClock.sleep(10);
+					handler.sendEmptyMessage(0);
+				}
+				handler.sendEmptyMessage(1);
+			}
+		}.start();
+	}
+
+
+	/**
+	 * TODO 获取云雾信息
+	 * @return
+	 */
+	public Map<String,Integer> smokePosition(){
+		smoke_hight=relativeLayout.getHeight();
+		smoke_width=relativeLayout.getWidth();
+		int y=heightPixels-smoke_hight-dpTopx(10);
+		int x=(widthPixels-smoke_width)/2;
+		Map map=new HashMap();
+		map.put("y", y);
+		map.put("x", x);
+		return map;
+	}
+
+	/**
+	 * TODO dpToXp
+	 * @param dp
+	 * @return
+	 */
+	public int dpTopx(int dp){
+
+		int dpToPx = DensityUtils.dpToPx(getApplicationContext(), dp);
+		return dpToPx;
+	}
+	
+	private class MyOnGestureListener  extends SimpleOnGestureListener{
+		
+		//滑动事件操作      
+		//e1 : 按下的事件，存储有按下的坐标   
+		//e2 : 抬起的事件，存储有抬起的坐标       
+		//velocityX : velocity速度，x轴的滑动速率   
+		//velocityY : y轴的滑动速率        @Override    
+		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,     
+				float velocityY) {     
+			//获取按下的x坐标       
+			float startX = e1.getRawX();    
+			//e1.getRawY();//获取按下的y的坐标       
+			//获取抬起的x坐标     
+			float endX = e2.getRawX();   
+			//获取按下的y坐标          
+			float startY = e1.getRawY();         
+			//获取抬起的y坐标
+			float endY = e2.getRawY();         
+			if(Math.abs(startX-endX)>dpTopx(50)){
+				popupWindow.dismiss();
+			}else if(Math.abs(endY-startY)>dpTopx(50)){
+				popupWindow.dismiss();
+			}else{
+				return false;
+			}
+			//true if the event is consu	med, else false    
+			//true :表示被消费了，执行了　　　　false： 拦截，不执行      
+			return true;   
+			}
+		}
+
+
+}
